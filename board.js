@@ -32,6 +32,7 @@ $(document).ready(function () {
     var repoObject;
 
     actionForIssueBoardPage();
+
     
     /**
      * Function to perform actions for issue board page.
@@ -99,6 +100,7 @@ $(document).ready(function () {
                     repoObject = REPOSITORY[PREFERRED_REPO_VALUE];
                     getAllMileStone(repoObject,true);
                     getAllLabel(repoObject,true);
+                    getClosedIssueBasedOnMileStone(repoObject);
                 }
             }
         });
@@ -147,7 +149,6 @@ $(document).ready(function () {
                 xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
             },
             success: function (data) {
-                console.log('labels',data);
                 $.each(data, function (index) {
                     LABEL[index] = this;
                     $('<option>').val(this.name).text(this.name).attr("data-label", this).appendTo('#lane1');
@@ -253,26 +254,32 @@ $(document).ready(function () {
             var draggableNumber = ui.draggable.attr("data-number");
             var laneId = $(this).attr("id");
             var updateData = "";
+            //@modifiedBy Bipen 
             switch (laneId) {
                 case "lane1_swim" :
                     updateData = LABEL_1_VALUE;
+                    editSpecificIssues(repoObject,draggableNumber , updateData);
                     break;
                 case "lane2_swim" :
                     updateData = LABEL_2_VALUE;
+                    editSpecificIssues(repoObject,draggableNumber , updateData);
                     break;
 
                 case "lane3_swim" :
                     updateData = LABEL_3_VALUE;
+                    editSpecificIssues(repoObject,draggableNumber , updateData);
                     break;
 
                 case "lane4_swim" :
                     updateData = LABEL_4_VALUE;
+                    editSpecificIssues(repoObject,draggableNumber , updateData);
+                    break;
+                case "lane5_swim" :
+                    closeSpecificIssues(repoObject, draggableNumber);
                     break;
                 default :
                     break;
             }
-            if (!updateData) return;
-            editSpecificIssues(repoObject,draggableNumber , updateData);
         }
     });
 
@@ -352,6 +359,10 @@ $(document).ready(function () {
         });
     }
 
+
+
+
+
     /**
      * @author adhpawal
      */
@@ -420,24 +431,65 @@ $(document).ready(function () {
     /**
      * @author adhpawal
      */
-    function appendIssueToRespectiveLane(issueList, lane){
+    function appendIssueToRespectiveLane(issueList, lane, draggable){
         var issueFormat="";
+        //@modifiedby bipen only enable draggable if issue in not closed
+        var draggableClassName = ( typeof draggable === 'undefined')?"draggable":"";
+        ////@modifiedby bipen
         $(issueList).each(function(){
-            issueFormat+='<div class="panel panel-default draggable" data-number="'+this.number+'"> <div class="panel-heading"> <h3 class="panel-title"><img alt="Issue Detail" src="'+this.user.avatar_url+'" width="20" height="20"/> <a href="'+this.html_url+'" target="_blank"># Issue '+this.number+'</a></h3> </div><div class="panel-body"> '+this.title+' </div></div>';
+            //@modifiedby bipen check if there is assignee in issue if not display repo users avatar
+            var avatar = (this.assignee == null)?this.user.avatar_url:this.assignee.avatar_url;
+            issueFormat+='<div class="panel panel-default '+draggableClassName+'" data-number="'+this.number+'"> <div class="panel-heading"> <h3 class="panel-title"><img alt="Issue Detail" src="'+ avatar+'" width="20" height="20"/> <a href="'+this.html_url+'" target="_blank"># Issue '+this.number+'</a></h3> </div><div class="panel-body"> '+this.title+' </div></div>';
         });
         $("#"+lane).html(issueFormat);
+
         $(".draggable").draggable({
-            revert: function(event, ui){
-                console.log(event);
+            revert: function (event, ui) {
                 return !event;
             },
             zIndex: 10000,
             appendTo: "body",
             stack: ".draggable"
         });
+
     }
 
     $( "#toggle" ).click(function() {
         $( "#page-wrapper-access-token" ).slideToggle( "slow" );
     });
+
+    //@addedby bipen
+    // function to get all closed issue and display it in closed swimlanes.
+    function getClosedIssueBasedOnMileStone(repoObject){
+        var issueApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/issues";
+        $.ajax({
+            url: issueApiUrl,
+            type: "GET",
+            data:{state:'closed'},
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
+            },
+            success: function (data) {
+                appendIssueToRespectiveLane(data, "lane5_swim", false);
+                $("#lane5-count").html(data.length);
+
+            }
+        });
+    }
+
+    function closeSpecificIssues(repoObject, issueNumber) {
+        var issueApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/issues/" + issueNumber;
+        var newLabel='{"state": "close", "labels" : []}';
+        $.ajax({
+            url: issueApiUrl,
+            type: "post",
+            data:newLabel,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
+            },
+            success: function (data) {
+                console.log(data);
+            }
+        });
+    }
 });
