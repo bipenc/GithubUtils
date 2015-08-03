@@ -210,6 +210,7 @@ $(document).ready(function () {
     function editSpecificIssues(repoObject, issueNumber, updateData) {
         var issueApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/issues/" + issueNumber;
         var newLabel='{"labels": ["'+updateData+'"]}';
+	responseStatus = true;
         $.ajax({
             url: issueApiUrl,
             type: "PATCH",
@@ -218,8 +219,12 @@ $(document).ready(function () {
             },
             data:newLabel,
             success: function (data) {
+		if(data.message === 'Not Found') {
+			responseStatus = false;
+		}
             }
         });
+	return responseStatus;
     }
 
     /**
@@ -255,32 +260,54 @@ $(document).ready(function () {
             var draggableNumber = ui.draggable.attr("data-number");
             var laneId = $(this).attr("id");
             var updateData = "";
+            //@modifiedBy Mukesh
+            var status = '';
+            var draggableId = $(this).attr('id');
+            var draggableLane = $(ui.draggable.parents()[0]).attr('id');
+
+            // prevent further processing and revert position if the block is drag on same lane
+            if (draggableLane == laneId) {
+                    ui.draggable.draggable({revert:true});
+                    return false;
+            }
             //@modifiedBy Bipen 
             switch (laneId) {
                 case "lane1_swim" :
                     updateData = LABEL_1_VALUE;
-                    editSpecificIssues(repoObject,draggableNumber , updateData);
+                    
                     break;
                 case "lane2_swim" :
                     updateData = LABEL_2_VALUE;
-                    editSpecificIssues(repoObject,draggableNumber , updateData);
+                   // editSpecificIssues(repoObject,draggableNumber , updateData);
                     break;
 
                 case "lane3_swim" :
                     updateData = LABEL_3_VALUE;
-                    editSpecificIssues(repoObject,draggableNumber , updateData);
+                 //   editSpecificIssues(repoObject,draggableNumber , updateData);
                     break;
 
                 case "lane4_swim" :
                     updateData = LABEL_4_VALUE;
-                    editSpecificIssues(repoObject,draggableNumber , updateData);
+                //    editSpecificIssues(repoObject,draggableNumber , updateData);
                     break;
                 case "lane5_swim" :
-                    closeSpecificIssues(repoObject, draggableNumber);
+                //    closeSpecificIssues(repoObject, draggableNumber);
                     break;
                 default :
                     break;
             }
+            //@modifiedBy Mukesh
+            // reset the position of the element to zero (so it fits in the drop box)
+            ui.draggable.appendTo($(this)).css({"left":0, "top":0});
+            if(laneId === 'lane5_swim') {
+                    status = closeSpecificIssues(repoObject, draggableNumber);
+            } else {
+                    status = editSpecificIssues(repoObject,draggableNumber , updateData);
+            }
+            if(!status) {
+                    ui.draggable.draggable({revert:true});
+            }
+
         }
     });
 
@@ -484,6 +511,7 @@ $(document).ready(function () {
     function closeSpecificIssues(repoObject, issueNumber) {
         var issueApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/issues/" + issueNumber;
         var newLabel='{"state": "close", "labels" : []}';
+	var responseStatus = true;
         $.ajax({
             url: issueApiUrl,
             type: "post",
@@ -492,8 +520,11 @@ $(document).ready(function () {
                 xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
             },
             success: function (data) {
-                console.log(data);
+		if(data.message === 'Not Found') {
+			responseStatus = false;
+		}
             }
         });
+	return responseStatus;
     }
 });
