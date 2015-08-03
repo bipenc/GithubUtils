@@ -149,6 +149,7 @@ $(document).ready(function () {
                 xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
             },
             success: function (data) {
+                $('#lane1,#lane2, #lane3, #lane4').empty().append('<option>Select</option>');
                 $.each(data, function (index) {
                     LABEL[index] = this;
                     $('<option>').val(this.name).text(this.name).attr("data-label", this).appendTo('#lane1');
@@ -322,13 +323,16 @@ $(document).ready(function () {
      * @author adhpawal
      */
     $("#repoId").on("change", function () {
+         //$(this).empty();
         var element = $(this).val();
         var repoObject = REPOSITORY[element];
         getAllMileStone(repoObject);
         getAllLabel(repoObject);
+      
     });
 
     $('#lane1').on("change",function(){
+       
         var element = $("#repoId").val();
         var repoObject = REPOSITORY[element];
         
