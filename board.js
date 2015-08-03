@@ -221,7 +221,6 @@ $(document).ready(function () {
 		if(data.message === 'Not Found') {
 			responseStatus = false;
 		}
-		console.log(data);
             }
         });
 	return responseStatus;
@@ -520,7 +519,6 @@ $(document).ready(function () {
 		if(data.message === 'Not Found') {
 			responseStatus = false;
 		}
-                console.log(data);
             }
         });
 	return responseStatus;
