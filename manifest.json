@@ -12,7 +12,7 @@
   },
 
   "background" : {
-     "scripts" : ["jquery-1.11.3.min.js","extension.js","board.js"]
+     "scripts" : ["jquery-1.11.3.min.js","jquery-ui-1.11.4.custom/jquery-ui.js","extension.js","board.js"]
    },
 
   "content_scripts": [

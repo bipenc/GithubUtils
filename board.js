@@ -16,7 +16,7 @@ $(document).ready(function () {
     var LABEL_3_VALUE = "";
     var LABEL_4_VALUE = "";
     var MILESTONE = [];
-    var MILESTONE_ISSUE=[];
+    var MILESTONE_ISSUE = [];
     var REPOSITORY = [];
     var ISSUE = [];
     var LABEL = [];
@@ -25,15 +25,15 @@ $(document).ready(function () {
     var GET_PREFERRED_REPO = "getPreferredRepo";
     var OKAY = "ok";
     var SAVE_PARAMETER_ACTION = "saveParameters";
-    var LEVEL1_ISSUE=[];
-    var LEVEL2_ISSUE=[];
-    var LEVEL3_ISSUE=[];
-    var LEVEL4_ISSUE=[];
+    var LEVEL1_ISSUE = [];
+    var LEVEL2_ISSUE = [];
+    var LEVEL3_ISSUE = [];
+    var LEVEL4_ISSUE = [];
     var repoObject;
 
     actionForIssueBoardPage();
 
-    
+
     /**
      * Function to perform actions for issue board page.
      * Actions include check git oauth key,value in local storage.
@@ -42,28 +42,30 @@ $(document).ready(function () {
      **/
     function actionForIssueBoardPage() {
         chrome.runtime.sendMessage({action: GET_STORED_VALUES_FOR_BOARD}, function (response) {
-            resonseValue = response.oauthValue;
-            if (resonseValue != "" || resonseValue != null) {
-                OAUTH_KEY_VALUE = resonseValue[OAUTH_STORAGE_KEY];
-                if (OAUTH_KEY_VALUE != "" || !OAUTH_KEY_VALUE) {
-                    IS_GIT_LOGGED_IN = true;
+            if (response) {
+                var resonseValue = response.oauthValue;
+                if (resonseValue != "" || resonseValue != null) {
+                    OAUTH_KEY_VALUE = resonseValue[OAUTH_STORAGE_KEY];
+                    if (OAUTH_KEY_VALUE != "" || !OAUTH_KEY_VALUE) {
+                        IS_GIT_LOGGED_IN = true;
+                    }
+                    PREFERRED_REPO_VALUE = resonseValue[STORED_REPO_KEY];
+                    STORED_MILESTONE_VALUE = resonseValue[STORED_MILESTONE_KEY];
+                    LABEL_1_VALUE = resonseValue[LABEL_1_KEY];
+                    LABEL_2_VALUE = resonseValue[LABEL_2_KEY];
+                    LABEL_3_VALUE = resonseValue[LABEL_3_KEY];
+                    LABEL_4_VALUE = resonseValue[LABEL_4_KEY];
                 }
-                PREFERRED_REPO_VALUE = resonseValue[STORED_REPO_KEY];
-                STORED_MILESTONE_VALUE = resonseValue[STORED_MILESTONE_KEY];
-                LABEL_1_VALUE = resonseValue[LABEL_1_KEY];
-                LABEL_2_VALUE = resonseValue[LABEL_2_KEY];
-                LABEL_3_VALUE = resonseValue[LABEL_3_KEY];
-                LABEL_4_VALUE = resonseValue[LABEL_4_KEY];
-            }
-            if (OAUTH_KEY_VALUE != "" || !OAUTH_KEY_VALUE) {
-                $("#accessed-content").show();
-                $("#page-wrapper-access-token").slideToggle("fast");
-                //call actions for issue page
-                getGithubRequiredVariables();
-            } else {
-                $("#page-wrapper-access-token").show();
-                $("#accessed-content").hide();
+                if (OAUTH_KEY_VALUE != "" || !OAUTH_KEY_VALUE) {
+                    $("#accessed-content").show();
+                    $("#page-wrapper-access-token").slideToggle("fast");
+                    //call actions for issue page
+                    getGithubRequiredVariables();
+                } else {
+                    $("#page-wrapper-access-token").show();
+                    $("#accessed-content").hide();
 
+                }
             }
         });
     }
@@ -98,8 +100,8 @@ $(document).ready(function () {
                 if (isOldValueSet && PREFERRED_REPO_VALUE) {
                     $('#repoId').val(PREFERRED_REPO_VALUE);
                     repoObject = REPOSITORY[PREFERRED_REPO_VALUE];
-                    getAllMileStone(repoObject,true);
-                    getAllLabel(repoObject,true);
+                    getAllMileStone(repoObject, true);
+                    getAllLabel(repoObject, true);
                     getClosedIssueBasedOnMileStone(repoObject);
                 }
             }
@@ -125,11 +127,11 @@ $(document).ready(function () {
                     MILESTONE[this.id] = this;
                     $('<option>').val(this.id).text(this.title).attr("data-milestoneobject", this).appendTo('#mileStone');
                 });
-                if(isOldValueSet && STORED_MILESTONE_VALUE)
+                if (isOldValueSet && STORED_MILESTONE_VALUE)
                     $('#mileStone').val(STORED_MILESTONE_VALUE);
 
-                if(isOldValueSet){
-                    getIssueBasedOnMileStone(STORED_MILESTONE_VALUE,repoObject);
+                if (isOldValueSet) {
+                    getIssueBasedOnMileStone(STORED_MILESTONE_VALUE, repoObject);
                 }
             }
         });
@@ -140,7 +142,7 @@ $(document).ready(function () {
      * @param repoObject A javascript object containing attributes owner(owner organization) and name(name of the repo).
      * @author nimesh
      **/
-    function getAllLabel(repoObject,isOldValueSet) {
+    function getAllLabel(repoObject, isOldValueSet) {
         var labelApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/labels";
         $.ajax({
             url: labelApiUrl,
@@ -156,7 +158,7 @@ $(document).ready(function () {
                     $('<option>').val(this.name).text(this.name).attr("data-label", this).appendTo('#lane3');
                     $('<option>').val(this.name).text(this.name).attr("data-label", this).appendTo('#lane4');
                 });
-                if(isOldValueSet) {
+                if (isOldValueSet) {
                     if (LABEL_1_VALUE)
                         $('#lane1').val(LABEL_1_VALUE);
                     if (LABEL_2_VALUE)
@@ -208,14 +210,14 @@ $(document).ready(function () {
      **/
     function editSpecificIssues(repoObject, issueNumber, updateData) {
         var issueApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/issues/" + issueNumber;
-        var newLabel='{"labels": ["'+updateData+'"]}';
+        var newLabel = '{"labels": ["' + updateData + '"]}';
         $.ajax({
             url: issueApiUrl,
             type: "PATCH",
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
             },
-            data:newLabel,
+            data: newLabel,
             success: function (data) {
             }
         });
@@ -239,14 +241,6 @@ $(document).ready(function () {
         });
     }
 
-    //Defines Draggable Element
-    $(".draggable").draggable({
-        revert: "invalid",
-        zIndex: 10000,
-        appendTo: "body",
-        stack: ".draggable"
-    });
-
     //Defines Droppable Element
     $(".droppable").droppable({
         tolerance: "pointer",
@@ -258,21 +252,21 @@ $(document).ready(function () {
             switch (laneId) {
                 case "lane1_swim" :
                     updateData = LABEL_1_VALUE;
-                    editSpecificIssues(repoObject,draggableNumber , updateData);
+                    editSpecificIssues(repoObject, draggableNumber, updateData);
                     break;
                 case "lane2_swim" :
                     updateData = LABEL_2_VALUE;
-                    editSpecificIssues(repoObject,draggableNumber , updateData);
+                    editSpecificIssues(repoObject, draggableNumber, updateData);
                     break;
 
                 case "lane3_swim" :
                     updateData = LABEL_3_VALUE;
-                    editSpecificIssues(repoObject,draggableNumber , updateData);
+                    editSpecificIssues(repoObject, draggableNumber, updateData);
                     break;
 
                 case "lane4_swim" :
                     updateData = LABEL_4_VALUE;
-                    editSpecificIssues(repoObject,draggableNumber , updateData);
+                    editSpecificIssues(repoObject, draggableNumber, updateData);
                     break;
                 case "lane5_swim" :
                     closeSpecificIssues(repoObject, draggableNumber);
@@ -328,14 +322,14 @@ $(document).ready(function () {
         getAllLabel(repoObject);
     });
 
-    $('#lane1').on("change",function(){
+    $('#lane1').on("change", function () {
         var element = $("#repoId").val();
         var repoObject = REPOSITORY[element];
-        
+
     })
 
 
-    function getIssueBasedOnMileStone(mileStone,repoObject){
+    function getIssueBasedOnMileStone(mileStone, repoObject) {
         var issueApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/issues";
         $.ajax({
             url: issueApiUrl,
@@ -347,9 +341,9 @@ $(document).ready(function () {
                 // debugger;
                 $.each(data, function (index) {
 
-                    ISSUE[index]=this;
-                    if(this.mileStone == STORED_MILESTONE_VALUE){
-                        MILESTONE_ISSUE[this.id]=this;
+                    ISSUE[index] = this;
+                    if (this.mileStone == STORED_MILESTONE_VALUE) {
+                        MILESTONE_ISSUE[this.id] = this;
                     }
                 });
 
@@ -360,24 +354,21 @@ $(document).ready(function () {
     }
 
 
-
-
-
     /**
      * @author adhpawal
      */
-    function divideIssueByLabel(issueList){
+    function divideIssueByLabel(issueList) {
         $("#lane1-label").html(LABEL_1_VALUE);
         $("#lane2-label").html(LABEL_2_VALUE);
         $("#lane3-label").html(LABEL_3_VALUE);
         $("#lane4-label").html(LABEL_4_VALUE);
         // debugger;
-        $(issueList).each(function(){
-            var issuePriority=1;
-            $(this.labels).each(function(){
-              issuePriority=getIssuePriority(issuePriority, this.name);
+        $(issueList).each(function () {
+            var issuePriority = 1;
+            $(this.labels).each(function () {
+                issuePriority = getIssuePriority(issuePriority, this.name);
             });
-            setIssuePriorityOrder(issuePriority,this);
+            setIssuePriorityOrder(issuePriority, this);
         });
         appendIssueToRespectiveLane(LEVEL1_ISSUE, "lane1_swim");
         $("#lane1-count").html(LEVEL1_ISSUE.length);
@@ -395,19 +386,19 @@ $(document).ready(function () {
      * @param labelName
      * @returns {number}
      */
-    function getIssuePriority(currentPriority, labelName){
-        var priorityNewValue=0;
-        if(labelName==LABEL_4_VALUE){
+    function getIssuePriority(currentPriority, labelName) {
+        var priorityNewValue = 0;
+        if (labelName == LABEL_4_VALUE) {
             priorityNewValue = 4;
-        }else if(labelName==LABEL_3_VALUE){
+        } else if (labelName == LABEL_3_VALUE) {
             priorityNewValue = 3;
 
-        }else if(labelName==LABEL_2_VALUE){
+        } else if (labelName == LABEL_2_VALUE) {
             priorityNewValue = 2;
-        }else if(labelName==LABEL_1_VALUE){
+        } else if (labelName == LABEL_1_VALUE) {
             priorityNewValue = 1;
         }
-        return Math.max(currentPriority,priorityNewValue);
+        return Math.max(currentPriority, priorityNewValue);
     }
 
     /**
@@ -416,14 +407,14 @@ $(document).ready(function () {
      * @param currentIssue
      * @returns {number}
      */
-    function setIssuePriorityOrder(currentPriority, currentIssue){
-        if(currentPriority==4){
+    function setIssuePriorityOrder(currentPriority, currentIssue) {
+        if (currentPriority == 4) {
             LEVEL4_ISSUE.push(currentIssue);
-        }else if(currentPriority==3){
+        } else if (currentPriority == 3) {
             LEVEL3_ISSUE.push(currentIssue);
-        }else if(currentPriority==2){
+        } else if (currentPriority == 2) {
             LEVEL2_ISSUE.push(currentIssue);
-        }else if(currentPriority==1){
+        } else if (currentPriority == 1) {
             LEVEL1_ISSUE.push(currentIssue);
         }
     }
@@ -431,17 +422,17 @@ $(document).ready(function () {
     /**
      * @author adhpawal
      */
-    function appendIssueToRespectiveLane(issueList, lane, draggable){
-        var issueFormat="";
+    function appendIssueToRespectiveLane(issueList, lane, draggable) {
+        var issueFormat = "";
         //@modifiedby bipen only enable draggable if issue in not closed
-        var draggableClassName = ( typeof draggable === 'undefined')?"draggable":"";
+        var draggableClassName = ( typeof draggable === 'undefined') ? "draggable" : "";
         ////@modifiedby bipen
-        $(issueList).each(function(){
+        $(issueList).each(function () {
             //@modifiedby bipen check if there is assignee in issue if not display repo users avatar
-            var avatar = (this.assignee == null)?this.user.avatar_url:this.assignee.avatar_url;
-            issueFormat+='<div class="panel panel-default '+draggableClassName+'" data-number="'+this.number+'"> <div class="panel-heading"> <h3 class="panel-title"><img alt="Issue Detail" src="'+ avatar+'" width="20" height="20"/> <a href="'+this.html_url+'" target="_blank"># Issue '+this.number+'</a></h3> </div><div class="panel-body"> '+this.title+' </div></div>';
+            var avatar = (this.assignee == null) ? this.user.avatar_url : this.assignee.avatar_url;
+            issueFormat += '<div class="panel panel-default ' + draggableClassName + '" data-number="' + this.number + '"> <div class="panel-heading"> <h3 class="panel-title"><img alt="Issue Detail" src="' + avatar + '" width="20" height="20"/> <a href="' + this.html_url + '" target="_blank"># Issue ' + this.number + '</a></h3> </div><div class="panel-body"> ' + this.title + ' </div></div>';
         });
-        $("#"+lane).html(issueFormat);
+        $("#" + lane).html(issueFormat);
 
         $(".draggable").draggable({
             revert: function (event, ui) {
@@ -454,18 +445,18 @@ $(document).ready(function () {
 
     }
 
-    $( "#toggle" ).click(function() {
-        $( "#page-wrapper-access-token" ).slideToggle( "slow" );
+    $("#toggle").click(function () {
+        $("#page-wrapper-access-token").slideToggle("slow");
     });
 
     //@addedby bipen
     // function to get all closed issue and display it in closed swimlanes.
-    function getClosedIssueBasedOnMileStone(repoObject){
+    function getClosedIssueBasedOnMileStone(repoObject) {
         var issueApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/issues";
         $.ajax({
             url: issueApiUrl,
             type: "GET",
-            data:{state:'closed'},
+            data: {state: 'closed'},
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
             },
@@ -479,11 +470,11 @@ $(document).ready(function () {
 
     function closeSpecificIssues(repoObject, issueNumber) {
         var issueApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/issues/" + issueNumber;
-        var newLabel='{"state": "close", "labels" : []}';
+        var newLabel = '{"state": "close", "labels" : []}';
         $.ajax({
             url: issueApiUrl,
             type: "post",
-            data:newLabel,
+            data: newLabel,
             beforeSend: function (xhr) {
                 xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
             },
