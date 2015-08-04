@@ -139,6 +139,7 @@ $(document).ready(function () {
      * Method to get all labes for a repo.
      * @param repoObject A javascript object containing attributes owner(owner organization) and name(name of the repo).
      * @author nimesh
+     * @modifiedby Rajisha Khadka
      **/
     function getAllLabel(repoObject,isOldValueSet) {
         var labelApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/labels";
@@ -350,7 +351,6 @@ $(document).ready(function () {
      * @author adhpawal
      */
     $("#repoId").on("change", function () {
-         //$(this).empty();
         var element = $(this).val();
         var repoObject = REPOSITORY[element];
         getAllMileStone(repoObject);
