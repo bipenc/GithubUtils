@@ -33,7 +33,6 @@ $(document).ready(function () {
 
     actionForIssueBoardPage();
 
-    
     /**
      * Function to perform actions for issue board page.
      * Actions include check git oauth key,value in local storage.
@@ -43,6 +42,7 @@ $(document).ready(function () {
     function actionForIssueBoardPage() {
         chrome.runtime.sendMessage({action: GET_STORED_VALUES_FOR_BOARD}, function (response) {
             resonseValue = response.oauthValue;
+
             if (resonseValue != "" || resonseValue != null) {
                 OAUTH_KEY_VALUE = resonseValue[OAUTH_STORAGE_KEY];
                 if (OAUTH_KEY_VALUE != "" || !OAUTH_KEY_VALUE) {
@@ -67,6 +67,7 @@ $(document).ready(function () {
             }
         });
     }
+
 
     /**
      * Method to get all required git variables like milestone,repository
@@ -96,8 +97,10 @@ $(document).ready(function () {
                     $('<option>').val(this.id).text(this.name).attr("data-owner", this.owner).attr("data-repoobject", this).appendTo('#repoId');
                 });
                 if (isOldValueSet && PREFERRED_REPO_VALUE) {
+
                     $('#repoId').val(PREFERRED_REPO_VALUE);
                     repoObject = REPOSITORY[PREFERRED_REPO_VALUE];
+                    $("#add-issue").attr("href", "https://github.com/" + repoObject.full_name +"/issues/new"); 
                     getAllMileStone(repoObject,true);
                     getAllLabel(repoObject,true);
                     getClosedIssueBasedOnMileStone(repoObject);
@@ -352,7 +355,9 @@ $(document).ready(function () {
      */
     $("#repoId").on("change", function () {
         var element = $(this).val();
+        alert(element);
         var repoObject = REPOSITORY[element];
+        alert(repoObject);
         getAllMileStone(repoObject);
         getAllLabel(repoObject);
       
