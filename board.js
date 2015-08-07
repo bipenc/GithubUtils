@@ -355,7 +355,6 @@ $(document).ready(function () {
      */
     $("#repoId").on("change", function () {
         var element = $(this).val();
-        alert(element);
         var repoObject = REPOSITORY[element];
         alert(repoObject);
         getAllMileStone(repoObject);
