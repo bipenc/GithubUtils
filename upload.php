@@ -12,8 +12,10 @@ if (isset($_FILES['image'])) {
     }
     if (empty($errors) == true) {
         move_uploaded_file($file_tmp, "images/" . $file_name);
+        echo json_encode(array('msg'=>"Successfully Uploaded.","filename" => $file_name));
 
     } else {
-        print_r($errors);  // not necessary because we are not checking for the server response in the front end.
+       // print_r($errors);  // not necessary because we are not checking for the server response in the front end.
+        echo json_encode(array('msg'=>"Please Try again."));
     }
 }

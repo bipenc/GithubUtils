@@ -377,7 +377,6 @@ $(document).ready(function () {
                 xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
             },
             success: function (data) {
-                // debugger;
                 $.each(data, function (index) {
 
                     ISSUE[index] = this;
@@ -467,14 +466,19 @@ $(document).ready(function () {
     function appendIssueToRespectiveLane(issueList, lane, draggable) {
         var issueFormat = "";
         //@modifiedby bipen only enable draggable if issue in not closed
-        var draggableClassName = ( typeof draggable === 'undefined') ? "draggable" : "";
-        ////@modifiedby bipen
+        var draggableClassName = "",
+            addImageblock = "";
+        if( typeof draggable === 'undefined') {
+            draggableClassName = "draggable";
+            addImageblock = '<p><a href="#"  class="uploadfile">Add image </a></p>';
+        }
+        //@modifiedby bipen
         $(issueList).each(function () {
             // if it is not a pull request dispaly the issue in the board
             if(!this.pull_request){
                 //@modifiedby bipen check if there is assignee in issue if not display repo users avatar
                 var avatar = (this.assignee == null) ? "user.png" : this.assignee.avatar_url;
-                issueFormat += '<div class="panel panel-default ' + draggableClassName + '" data-number="' + this.number + '"> <div class="panel-heading"> <h3 class="panel-title"><img alt="Issue Detail" src="' + avatar + '" width="20" height="20"/> <a href="' + this.html_url + '" target="_blank"># Issue ' + this.number + '</a></h3> </div><div class="panel-body"> ' + this.title + ' <span class="uploadfile"> Add image </span></div></div>';
+                issueFormat += '<div class="panel panel-default ' + draggableClassName + '" data-number="' + this.number + '"> <div class="panel-heading"> <h3 class="panel-title"><img alt="Issue Detail" src="' + avatar + '" width="20" height="20"/> <a href="' + this.html_url + '" target="_blank"># Issue ' + this.number + '</a></h3> </div><div class="panel-body"> ' + this.title + addImageblock + ' </div></div>';
             }
             //@TODO Decide where to display pull request or not
         });
@@ -496,10 +500,9 @@ $(document).ready(function () {
     });
 
     $(document).on('click','.uploadfile',function(){
-        console.log('click');
-        //chrome.runtime.sendMessage({ action: 'browseAndUpload' });
         var uploadURL = 'http://localhost/html/GithubUtils/upload.php';
-
+        var issueNumber = $(this).closest(".draggable").data('number')
+        console.log(issueNumber);
         /* Creates an `input[type="file]` */
         var fileChooser = document.createElement('input');
         fileChooser.type = 'file';
@@ -511,12 +514,16 @@ $(document).ready(function () {
             var xhr = new XMLHttpRequest();
             xhr.open('POST', uploadURL, true);
             xhr.addEventListener('readystatechange', function (evt) {
-                console.log('ReadyState: ' + xhr.readyState,
-                    'Status: ' + xhr.status);
+                if (xhr.readyState==4 && xhr.status==200)
+                {
+                    var response = JSON.parse(xhr.responseText);
+                    createIssueComment(issueNumber, response.filename);
+                }
+
             });
 
             xhr.send(formData);
-            form.reset();   // <-- Resets the input so we do get a `change` event,
+             form.reset();   // <-- Resets the input so we do get a `change` event,
                             //     even if the user chooses the same file
         });
 
@@ -564,5 +571,24 @@ $(document).ready(function () {
             }
         });
 	return responseStatus;
+    }
+
+    function createIssueComment(issueNumber, filename){
+        var issueApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/issues/" + issueNumber + "/comments";
+        var comment_messsage = "Attached Files with name: " + filename;
+        var newComment = '{"body": "'+ comment_messsage +'"}';
+        $.ajax({
+            url: issueApiUrl,
+            type: "post",
+            data: newComment,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
+            },
+            success: function (data) {
+                if(data) {
+                    alert('File uploaded Successfully and added to comments.');
+                }
+            }
+        });
     }
 });
