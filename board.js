@@ -283,20 +283,16 @@ $(document).ready(function () {
                     break;
                 case "lane2_swim" :
                     updateData = LABEL_2_VALUE;
-                   // editSpecificIssues(repoObject,draggableNumber , updateData);
                     break;
 
                 case "lane3_swim" :
                     updateData = LABEL_3_VALUE;
-                 //   editSpecificIssues(repoObject,draggableNumber , updateData);
                     break;
 
                 case "lane4_swim" :
                     updateData = LABEL_4_VALUE;
-                //    editSpecificIssues(repoObject,draggableNumber , updateData);
                     break;
                 case "lane5_swim" :
-                //    closeSpecificIssues(repoObject, draggableNumber);
                     break;
                 default :
                     break;
@@ -311,10 +307,43 @@ $(document).ready(function () {
             }
             if(!status) {
                     ui.draggable.draggable({revert:true});
+            } else {
+                updateNewLaneIssueNumber(laneId);
+                updateOldLaneIssueNumber(draggableLane);
             }
 
         }
     });
+    
+    // Returns an array of numbers located in the string
+    function getNumbers(input) {
+        var numbers = input.match(/[0-9]+/g);
+        return numbers[0];
+    }
+    
+    function updateNewLaneIssueNumber(input)
+    {
+        var nummbers = getNumbers(input);
+        
+        var lane_count = "#lane"+ nummbers +"-count";
+        var total_issues = $(lane_count).text();
+        var new_total_issues = parseInt(total_issues) + 1;
+        var old_lane_issues = 
+        
+        $(lane_count).text(new_total_issues);
+    }
+    
+    
+    function updateOldLaneIssueNumber(input)
+    {
+        var nummbers = getNumbers(input);
+        
+        var lane_count = "#lane"+ nummbers +"-count";
+        var total_issues = $(lane_count).text();
+        var new_total_issues = parseInt(total_issues) - 1;
+        
+        $(lane_count).text(new_total_issues);
+    }
 
     //Setting Form Interceptor
     $("#github-user-setting").on("submit", function (event) {
