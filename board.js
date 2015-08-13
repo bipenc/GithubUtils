@@ -70,6 +70,7 @@ $(document).ready(function () {
         });
     }
 
+
     /**
      * Method to get all required git variables like milestone,repository
      * @author nimesh
@@ -100,7 +101,8 @@ $(document).ready(function () {
                 if (isOldValueSet && PREFERRED_REPO_VALUE) {
                     $('#repoId').val(PREFERRED_REPO_VALUE);
                     repoObject = REPOSITORY[PREFERRED_REPO_VALUE];
-                    getAllMileStone(repoObject, true);
+					$("#add-issue").attr("href", "https://github.com/" + repoObject.full_name +"/issues/new");                     
+					getAllMileStone(repoObject, true);
                     getAllLabel(repoObject, true);
                     getClosedIssueBasedOnMileStone(repoObject);
                 }
@@ -141,6 +143,7 @@ $(document).ready(function () {
      * Method to get all labes for a repo.
      * @param repoObject A javascript object containing attributes owner(owner organization) and name(name of the repo).
      * @author nimesh
+     * @modifiedby Rajisha Khadka
      **/
     function getAllLabel(repoObject, isOldValueSet) {
         var labelApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/labels";
@@ -151,6 +154,7 @@ $(document).ready(function () {
                 xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
             },
             success: function (data) {
+                $('#lane1,#lane2, #lane3, #lane4').empty().append('<option>Select</option>');
                 $.each(data, function (index) {
                     LABEL[index] = this;
                     $('<option>').val(this.name).text(this.name).attr("data-label", this).appendTo('#lane1');

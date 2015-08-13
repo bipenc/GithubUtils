@@ -76,4 +76,8 @@ button {
 .introduction ol li{
 list-style: decimal;}
 
+.flt-right {
+  float : right;
+}
+
 
