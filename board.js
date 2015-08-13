@@ -470,9 +470,13 @@ $(document).ready(function () {
         var draggableClassName = ( typeof draggable === 'undefined') ? "draggable" : "";
         ////@modifiedby bipen
         $(issueList).each(function () {
-            //@modifiedby bipen check if there is assignee in issue if not display repo users avatar
-            var avatar = (this.assignee == null) ? this.user.avatar_url : this.assignee.avatar_url;
-            issueFormat += '<div class="panel panel-default ' + draggableClassName + '" data-number="' + this.number + '"> <div class="panel-heading"> <h3 class="panel-title"><img alt="Issue Detail" src="' + avatar + '" width="20" height="20"/> <a href="' + this.html_url + '" target="_blank"># Issue ' + this.number + '</a></h3> </div><div class="panel-body"> ' + this.title + ' </div></div>';
+            // if it is not a pull request dispaly the issue in the board
+            if(!this.pull_request){
+                //@modifiedby bipen check if there is assignee in issue if not display repo users avatar
+                var avatar = (this.assignee == null) ? "user.png" : this.assignee.avatar_url;
+                issueFormat += '<div class="panel panel-default ' + draggableClassName + '" data-number="' + this.number + '"> <div class="panel-heading"> <h3 class="panel-title"><img alt="Issue Detail" src="' + avatar + '" width="20" height="20"/> <a href="' + this.html_url + '" target="_blank"># Issue ' + this.number + '</a></h3> </div><div class="panel-body"> ' + this.title + ' <span class="uploadfile"> Add image </span></div></div>';
+            }
+            //@TODO Decide where to display pull request or not
         });
         $("#" + lane).html(issueFormat);
 
@@ -491,6 +495,38 @@ $(document).ready(function () {
         $("#page-wrapper-access-token").slideToggle("slow");
     });
 
+    $(document).on('click','.uploadfile',function(){
+        console.log('click');
+        //chrome.runtime.sendMessage({ action: 'browseAndUpload' });
+        var uploadURL = 'http://localhost/html/GithubUtils/upload.php';
+
+        /* Creates an `input[type="file]` */
+        var fileChooser = document.createElement('input');
+        fileChooser.type = 'file';
+        fileChooser.addEventListener('change', function () {
+            var file = fileChooser.files[0];
+            var formData = new FormData();
+            formData.append("image", file);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', uploadURL, true);
+            xhr.addEventListener('readystatechange', function (evt) {
+                console.log('ReadyState: ' + xhr.readyState,
+                    'Status: ' + xhr.status);
+            });
+
+            xhr.send(formData);
+            form.reset();   // <-- Resets the input so we do get a `change` event,
+                            //     even if the user chooses the same file
+        });
+
+        /* Wrap it in a form for resetting */
+        var form = document.createElement('form');
+        form.appendChild(fileChooser);
+
+        $(fileChooser).click();
+
+    });
     //@addedby bipen
     // function to get all closed issue and display it in closed swimlanes.
     function getClosedIssueBasedOnMileStone(repoObject) {
