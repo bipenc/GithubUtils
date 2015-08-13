@@ -34,6 +34,9 @@ $(document).ready(function () {
     populateFilterTextArea();
 
 
+
+
+
     /**
      ** Add message listners for messages. Listeners listen for message from popup.js and dom.js
      ** These listeners serve as trigger to take appropriate action.
@@ -89,6 +92,11 @@ $(document).ready(function () {
                     }
                 });
                 break;
+            case 'browseAndUpload' :
+                console.log('upload called');
+
+                //fileChooser.click();
+                break;
             case SAVE_PARAMETER_ACTION:
                 var valueToSave = request.valueObj;
                 var keyForSave = request.key;
@@ -106,6 +114,8 @@ $(document).ready(function () {
         return true;
     });
 
+
+
     /**
      * Add change listner for storage changes.
      * Triggers when key:value stored in chrome local storage changes.
@@ -116,6 +126,7 @@ $(document).ready(function () {
             chrome.tabs.reload(tabs[0].id);
         });
     });
+
 
     //Method to get filter string from chrome storage
     //@author nimesh

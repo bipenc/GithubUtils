@@ -406,7 +406,6 @@ $(document).ready(function () {
                 xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
             },
             success: function (data) {
-                // debugger;
                 $.each(data, function (index) {
 
                     ISSUE[index] = this;
@@ -496,12 +495,21 @@ $(document).ready(function () {
     function appendIssueToRespectiveLane(issueList, lane, draggable) {
         var issueFormat = "";
         //@modifiedby bipen only enable draggable if issue in not closed
-        var draggableClassName = ( typeof draggable === 'undefined') ? "draggable" : "";
-        ////@modifiedby bipen
+        var draggableClassName = "",
+            addImageblock = "";
+        if( typeof draggable === 'undefined') {
+            draggableClassName = "draggable";
+            addImageblock = '<p><a href="#"  class="uploadfile">Add image </a></p>';
+        }
+        //@modifiedby bipen
         $(issueList).each(function () {
-            //@modifiedby bipen check if there is assignee in issue if not display repo users avatar
-            var avatar = (this.assignee == null) ? this.user.avatar_url : this.assignee.avatar_url;
-            issueFormat += '<div class="panel panel-default ' + draggableClassName + '" data-number="' + this.number + '"> <div class="panel-heading"> <h3 class="panel-title"><img alt="Issue Detail" src="' + avatar + '" width="20" height="20"/> <a href="' + this.html_url + '" target="_blank"># Issue ' + this.number + '</a></h3> </div><div class="panel-body"> ' + this.title + ' </div></div>';
+            // if it is not a pull request dispaly the issue in the board
+            if(!this.pull_request){
+                //@modifiedby bipen check if there is assignee in issue if not display repo users avatar
+                var avatar = (this.assignee == null) ? "user.png" : this.assignee.avatar_url;
+                issueFormat += '<div class="panel panel-default ' + draggableClassName + '" data-number="' + this.number + '"> <div class="panel-heading"> <h3 class="panel-title"><img alt="Issue Detail" src="' + avatar + '" width="20" height="20"/> <a href="' + this.html_url + '" target="_blank"># Issue ' + this.number + '</a></h3> </div><div class="panel-body"> ' + this.title + addImageblock + ' </div></div>';
+            }
+            //@TODO Decide where to display pull request or not
         });
         $("#" + lane).html(issueFormat);
 
@@ -520,6 +528,41 @@ $(document).ready(function () {
         $("#page-wrapper-access-token").slideToggle("slow");
     });
 
+    $(document).on('click','.uploadfile',function(){
+        var uploadURL = 'http://localhost/html/GithubUtils/upload.php';
+        var issueNumber = $(this).closest(".draggable").data('number')
+        console.log(issueNumber);
+        /* Creates an `input[type="file]` */
+        var fileChooser = document.createElement('input');
+        fileChooser.type = 'file';
+        fileChooser.addEventListener('change', function () {
+            var file = fileChooser.files[0];
+            var formData = new FormData();
+            formData.append("image", file);
+
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', uploadURL, true);
+            xhr.addEventListener('readystatechange', function (evt) {
+                if (xhr.readyState==4 && xhr.status==200)
+                {
+                    var response = JSON.parse(xhr.responseText);
+                    createIssueComment(issueNumber, response.filename);
+                }
+
+            });
+
+            xhr.send(formData);
+             form.reset();   // <-- Resets the input so we do get a `change` event,
+                            //     even if the user chooses the same file
+        });
+
+        /* Wrap it in a form for resetting */
+        var form = document.createElement('form');
+        form.appendChild(fileChooser);
+
+        $(fileChooser).click();
+
+    });
     //@addedby bipen
     // function to get all closed issue and display it in closed swimlanes.
     function getClosedIssueBasedOnMileStone(repoObject) {
@@ -557,5 +600,24 @@ $(document).ready(function () {
             }
         });
 	return responseStatus;
+    }
+
+    function createIssueComment(issueNumber, filename){
+        var issueApiUrl = "https://api.github.com/repos/" + repoObject.full_name + "/issues/" + issueNumber + "/comments";
+        var comment_messsage = "Attached Files with name: " + filename;
+        var newComment = '{"body": "'+ comment_messsage +'"}';
+        $.ajax({
+            url: issueApiUrl,
+            type: "post",
+            data: newComment,
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader("Authorization", "token " + OAUTH_KEY_VALUE)
+            },
+            success: function (data) {
+                if(data) {
+                    alert('File uploaded Successfully and added to comments.');
+                }
+            }
+        });
     }
 });
