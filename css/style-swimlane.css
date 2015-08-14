@@ -44,5 +44,9 @@ aside{
 }
 
 .margin-bottom{
-  margin-bottom: 5px;
+  margin: 5px 0;
+}
+
+.col-lg-2 {
+    width: 20%;
 }
